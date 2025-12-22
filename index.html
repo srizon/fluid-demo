@@ -60,6 +60,11 @@
           return 0;
         });
         setFilteredTags(sorted);
+        
+        // Open dropdown when typing (even if no matches) to show preview
+        if (inputValue.trim() && !filtered.some(tag => tag.toLowerCase() === inputValue.toLowerCase().trim())) {
+          setIsDropdownOpen(true);
+        }
       }, [inputValue, savedTags, selectedTags]);
 
       // Handle input change
@@ -90,9 +95,9 @@
         }
       };
 
-      // Handle input focus - open dropdown if at least one saved tag exists
+      // Handle input focus - open dropdown if at least one saved tag exists or if there's input
       const handleInputFocus = () => {
-        if (savedTags.length > 0) {
+        if (savedTags.length > 0 || inputValue.trim()) {
           setIsDropdownOpen(true);
         }
       };
@@ -115,6 +120,10 @@
       // Handle tag selection from dropdown
       const handleTagSelect = (tag) => {
         if (!selectedTags.includes(tag) && selectedTags.length < 5) {
+          // Add to savedTags if it doesn't exist
+          if (!savedTags.includes(tag)) {
+            setSavedTags([...savedTags, tag]);
+          }
           setSelectedTags([...selectedTags, tag]);
           setInputValue('');
         }
@@ -203,7 +212,7 @@
                 </div>
               </div>
 
-              {isDropdownOpen && filteredTags.length > 0 && (
+              {isDropdownOpen && (filteredTags.length > 0 || (inputValue.trim() && !filteredTags.some(tag => tag.toLowerCase() === inputValue.toLowerCase().trim()))) && (
                 <div ref={dropdownRef} className="dropdown-list">
                   {filteredTags.map((tag) => (
                     <div
@@ -224,12 +233,34 @@
                       <span className="dropdown-item-text">{tag}</span>
                     </div>
                   ))}
+                  {/* Show preview of new tag if input doesn't match any existing tag */}
+                  {inputValue.trim() && !filteredTags.some(tag => tag.toLowerCase() === inputValue.toLowerCase().trim()) && (
+                    <div
+                      className="dropdown-item"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const newTag = inputValue.trim();
+                        if (!selectedTags.includes(newTag) && selectedTags.length < 5) {
+                          handleTagSelect(newTag);
+                        }
+                        inputRef.current?.focus();
+                      }}
+                      onMouseDown={(e) => e.preventDefault()}
+                    >
+                      <div className="checkbox-wrapper">
+                        <div className="checkbox">
+                        </div>
+                      </div>
+                      <span className="dropdown-item-text">{inputValue.trim()}</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
 
             <div className="subtext">
-              <span>Up to 5 tags, comma separated</span>
+              <span>Add up to 5 tags. Separate them with commas.</span>
             </div>
           </div>
         </div>
