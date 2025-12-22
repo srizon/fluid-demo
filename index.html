@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typeahead Component</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    function TypeaheadComponent() {
+      const [selectedTags, setSelectedTags] = useState([]);
+      const [savedTags, setSavedTags] = useState([]);
+      const [inputValue, setInputValue] = useState('');
+      const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+      const [filteredTags, setFilteredTags] = useState([]);
+      const inputRef = useRef(null);
+      const dropdownRef = useRef(null);
+
+      // Clear localStorage on page reload for fresh start
+      useEffect(() => {
+        localStorage.removeItem('typeaheadSavedTags');
+        setSavedTags([]);
+        setSelectedTags([]);
+      }, []);
+
+      // Save all tags to localStorage whenever savedTags change
+      useEffect(() => {
+        if (savedTags.length > 0) {
+          localStorage.setItem('typeaheadSavedTags', JSON.stringify(savedTags));
+        } else {
+          localStorage.removeItem('typeaheadSavedTags');
+        }
+      }, [savedTags]);
+
+      // Filter saved tags based on input value and sort selected items to top
+      useEffect(() => {
+        let filtered = [];
+        if (!inputValue.trim()) {
+          filtered = savedTags;
+        } else {
+          const filter = inputValue.toLowerCase().trim();
+          filtered = savedTags.filter(tag => 
+            tag.toLowerCase().includes(filter)
+          );
+        }
+        // Sort: selected items first, then unselected
+        const sorted = [...filtered].sort((a, b) => {
+          const aSelected = selectedTags.includes(a);
+          const bSelected = selectedTags.includes(b);
+          if (aSelected && !bSelected) return -1;
+          if (!aSelected && bSelected) return 1;
+          return 0;
+        });
+        setFilteredTags(sorted);
+      }, [inputValue, savedTags, selectedTags]);
+
+      // Handle input change
+      const handleInputChange = (e) => {
+        const value = e.target.value;
+        setInputValue(value);
+
+        // Check if comma is typed to add tag
+        if (value.includes(',')) {
+          const newTag = value.split(',')[0].trim();
+          if (newTag && selectedTags.length < 5) {
+            // Add to savedTags if it doesn't exist
+            if (!savedTags.includes(newTag)) {
+              setSavedTags([...savedTags, newTag]);
+            }
+            // Add to selectedTags if not already selected
+            if (!selectedTags.includes(newTag)) {
+              setSelectedTags([...selectedTags, newTag]);
+            }
+            setInputValue('');
+          } else if (selectedTags.length >= 5) {
+            // Remove comma if max tags reached
+            setInputValue(value.replace(',', ''));
+          } else {
+            // Remove comma if tag is empty
+            setInputValue(value.replace(',', ''));
+          }
+        }
+      };
+
+      // Handle input focus - open dropdown if at least one saved tag exists
+      const handleInputFocus = () => {
+        if (savedTags.length > 0) {
+          setIsDropdownOpen(true);
+        }
+      };
+
+      // Handle input blur - close dropdown after a short delay to allow clicks
+      const handleInputBlur = (e) => {
+        // Use setTimeout to allow click events to fire first
+        setTimeout(() => {
+          // Check if focus moved to dropdown or if dropdown was clicked
+          const activeElement = document.activeElement;
+          if (
+            !dropdownRef.current?.contains(activeElement) &&
+            activeElement !== inputRef.current
+          ) {
+            setIsDropdownOpen(false);
+          }
+        }, 150);
+      };
+
+      // Handle tag selection from dropdown
+      const handleTagSelect = (tag) => {
+        if (!selectedTags.includes(tag) && selectedTags.length < 5) {
+          setSelectedTags([...selectedTags, tag]);
+          setInputValue('');
+        }
+      };
+
+      // Handle tag removal from selected tags
+      const handleTagRemove = (tagToRemove) => {
+        setSelectedTags(selectedTags.filter(tag => tag !== tagToRemove));
+      };
+
+      // Handle click on dropdown item
+      const handleDropdownItemClick = (tag, e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (selectedTags.includes(tag)) {
+          handleTagRemove(tag);
+        } else {
+          handleTagSelect(tag);
+        }
+        // Keep focus on input
+        inputRef.current?.focus();
+      };
+
+      // Close dropdown when clicking outside
+      useEffect(() => {
+        const handleClickOutside = (event) => {
+          if (
+            dropdownRef.current &&
+            !dropdownRef.current.contains(event.target) &&
+            inputRef.current &&
+            !inputRef.current.contains(event.target)
+          ) {
+            setIsDropdownOpen(false);
+          }
+        };
+
+        if (isDropdownOpen) {
+          document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+          document.removeEventListener('mousedown', handleClickOutside);
+        };
+      }, [isDropdownOpen]);
+
+      return (
+        <div className="container">
+          <div className="typeahead-wrapper">
+            <div className="title">Custom tags</div>
+            
+            <div className="input-wrapper">
+              <div 
+                className="input-container"
+                onClick={() => inputRef.current?.focus()}
+              >
+                <div className="tags-container">
+                  {selectedTags.map((tag) => (
+                    <div key={tag} className="tag">
+                      <span className="tag-text">{tag}</span>
+                      <button
+                        type="button"
+                        className="tag-close"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTagRemove(tag);
+                        }}
+                        aria-label={`Remove ${tag}`}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    className="tag-input"
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
+                    placeholder={selectedTags.length === 0 ? "Type to add tags..." : ""}
+                    disabled={selectedTags.length >= 5}
+                  />
+                </div>
+              </div>
+
+              {isDropdownOpen && filteredTags.length > 0 && (
+                <div ref={dropdownRef} className="dropdown-list">
+                  {filteredTags.map((tag) => (
+                    <div
+                      key={tag}
+                      className={`dropdown-item ${selectedTags.includes(tag) ? 'selected' : ''}`}
+                      onClick={(e) => handleDropdownItemClick(tag, e)}
+                      onMouseDown={(e) => e.preventDefault()}
+                    >
+                      <div className="checkbox-wrapper">
+                        <div className={`checkbox ${selectedTags.includes(tag) ? 'checked' : ''}`}>
+                          {selectedTags.includes(tag) && (
+                            <svg width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          )}
+                        </div>
+                      </div>
+                      <span className="dropdown-item-text">{tag}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="subtext">
+              <span>Up to 5 tags, comma separated</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<TypeaheadComponent />);
+  </script>
+</body>
+</html>
+

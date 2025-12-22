@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add to List Component</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    function AddToListComponent() {
+      const [isMenuOpen, setIsMenuOpen] = useState(false);
+      const [isModalOpen, setIsModalOpen] = useState(false);
+      const [selectedLists, setSelectedLists] = useState([]);
+      const [lists, setLists] = useState([
+        { id: 'favorites', name: 'Favorites' },
+        { id: 'check-later', name: 'Check later' },
+        { id: 'designers', name: 'Designers' }
+      ]);
+      const [listName, setListName] = useState('');
+      const [listDescription, setListDescription] = useState('');
+      const buttonRef = useRef(null);
+      const menuRef = useRef(null);
+      const modalRef = useRef(null);
+
+      const handleButtonClick = (e) => {
+        e.stopPropagation();
+        setIsMenuOpen(!isMenuOpen);
+      };
+
+      const handleListToggle = (listId) => {
+        setSelectedLists(prev => {
+          if (prev.includes(listId)) {
+            return prev.filter(id => id !== listId);
+          } else {
+            return [...prev, listId];
+          }
+        });
+      };
+
+      const handleCreateNewList = () => {
+        setIsModalOpen(true);
+      };
+
+      const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setListName('');
+        setListDescription('');
+        // Menu remains open to maintain context
+      };
+
+      const handleCreateList = () => {
+        if (listName.trim()) {
+          const newId = `list-${Date.now()}`;
+          const newList = {
+            id: newId,
+            name: listName.trim()
+          };
+          setLists([...lists, newList]);
+          // Automatically select the newly created list
+          setSelectedLists([...selectedLists, newId]);
+          handleCloseModal();
+        }
+      };
+
+      const handleModalBackdropClick = (e) => {
+        if (e.target === e.currentTarget) {
+          handleCloseModal();
+        }
+      };
+
+      // Close menu when clicking outside (but not when modal is open)
+      useEffect(() => {
+        const handleClickOutside = (event) => {
+          // Don't close menu if modal is open
+          if (isModalOpen) {
+            return;
+          }
+          
+          // Check if click is outside menu and button
+          const isOutsideMenu = menuRef.current && !menuRef.current.contains(event.target);
+          const isOutsideButton = buttonRef.current && !buttonRef.current.contains(event.target);
+          
+          if (isOutsideMenu && isOutsideButton) {
+            setIsMenuOpen(false);
+          }
+        };
+
+        if (isMenuOpen && !isModalOpen) {
+          document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+          document.removeEventListener('mousedown', handleClickOutside);
+        };
+      }, [isMenuOpen, isModalOpen]);
+
+      const hasSelection = selectedLists.length > 0;
+
+      return (
+        <div className="add-to-list-container">
+          <button
+            ref={buttonRef}
+            className="add-to-list-button"
+            onClick={handleButtonClick}
+            aria-label="Add to list"
+          >
+            <div className="add-to-list-tooltip">Add to list</div>
+            <div className="add-to-list-icon">
+              <img 
+                src={hasSelection ? 'assets/icon-favorite-selected.svg' : 'assets/icon-favorite.svg'} 
+                alt={hasSelection ? "Remove from list" : "Add to list"}
+              />
+            </div>
+          </button>
+
+          {isMenuOpen && (
+            <div ref={menuRef} className="context-menu">
+              {lists.map((list) => (
+                <div
+                  key={list.id}
+                  className="context-menu-item"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleListToggle(list.id);
+                  }}
+                >
+                  <div className="context-menu-checkbox-wrapper">
+                    <div className={`context-menu-checkbox ${selectedLists.includes(list.id) ? 'checked' : ''}`}>
+                      {selectedLists.includes(list.id) && (
+                        <svg width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                  <span className="context-menu-item-text">{list.name}</span>
+                </div>
+              ))}
+              <div className="context-menu-divider"></div>
+              <div
+                className="context-menu-item"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCreateNewList();
+                }}
+              >
+                <div className="context-menu-item-icon">
+                  <img src="assets/icon-add.svg" alt="Add" />
+                </div>
+                <span className="context-menu-item-text">Create new list</span>
+              </div>
+            </div>
+          )}
+
+          {isModalOpen && (
+            <div 
+              ref={modalRef}
+              className="modal-overlay"
+              onClick={handleModalBackdropClick}
+            >
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <h2 className="modal-title">Create new list</h2>
+                  <button 
+                    className="modal-close-button"
+                    onClick={handleCloseModal}
+                    aria-label="Close modal"
+                  >
+                    <img src="assets/Dropdown/icon-close.svg" alt="Close" />
+                  </button>
+                </div>
+                <div className="modal-body">
+                  <div className="modal-input-group">
+                    <label htmlFor="list-name" className="modal-label">List name</label>
+                    <input
+                      id="list-name"
+                      type="text"
+                      className="modal-input"
+                      placeholder="Hint text"
+                      value={listName}
+                      onChange={(e) => setListName(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
+                  <div className="modal-input-group">
+                    <label htmlFor="list-description" className="modal-label">
+                      How would you describe this list (optional)
+                    </label>
+                    <textarea
+                      id="list-description"
+                      className="modal-textarea"
+                      placeholder="Hint text"
+                      value={listDescription}
+                      onChange={(e) => setListDescription(e.target.value)}
+                      rows={4}
+                    />
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button 
+                    className="modal-button modal-button-cancel"
+                    onClick={handleCloseModal}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    className="modal-button modal-button-primary"
+                    onClick={handleCreateList}
+                    disabled={!listName.trim()}
+                  >
+                    Create list
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<AddToListComponent />);
+  </script>
+</body>
+</html>
+

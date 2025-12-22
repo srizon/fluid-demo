@@ -1,0 +1,630 @@
+@font-face {
+  font-family: 'PP Neue Montreal';
+  src: url('https://www.upwork.com/static/fonts-global/4.7.0/neue-montreal-variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #ffffff;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.typeahead-wrapper {
+  width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.title {
+  font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0.48px;
+  color: #1a1a1a;
+  font-variation-settings: 'wght' 600;
+}
+
+.input-container {
+  background-color: #ffffff;
+  border: 1px solid #d4dbe2;
+  border-radius: 12px;
+  height: 40px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  cursor: text;
+  transition: border-color 0.2s;
+}
+
+.input-container:focus-within {
+  border-color: #1a1a1a;
+  outline: none;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  flex: 1;
+  min-width: 164px;
+}
+
+.tag {
+  background-color: #f3f5f7;
+  border-radius: 9999px;
+  height: 24px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.tag-text {
+  font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 450;
+  font-size: 14px;
+  line-height: 22px;
+  letter-spacing: 0.56px;
+  color: #1a1a1a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variation-settings: 'wght' 450;
+}
+
+.tag-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: #1a1a1a;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+
+.tag-close:hover {
+  opacity: 0.7;
+}
+
+.tag-close:focus {
+  outline: none;
+  opacity: 0.7;
+}
+
+.tag-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 450;
+  font-size: 14px;
+  line-height: 22px;
+  letter-spacing: 0.56px;
+  color: #1a1a1a;
+  flex: 1;
+  min-width: 50px;
+  font-variation-settings: 'wght' 450;
+}
+
+.tag-input::placeholder {
+  color: #67737E;
+  opacity: 0.6;
+}
+
+.tag-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.dropdown-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  border: 1px solid #d4dbe2;
+  border-radius: 12px;
+  padding: 8px 0;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.dropdown-item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 5px 16px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.dropdown-item:hover {
+  background-color: #f9fafb;
+}
+
+.dropdown-item.selected {
+  /* background-color: #f9fafb; */
+}
+
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  border: 1px solid #d4dbe2;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  transition: all 0.15s;
+}
+
+.checkbox.checked {
+  border-color: #1a1a1a;
+  background-color: #fff;
+  color: #1a1a1a;
+  border-width: 1px;
+}
+
+.checkbox svg {
+  width: 10px;
+  height: 8px;
+}
+
+.dropdown-item-text {
+  font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 22px;
+  letter-spacing: 0.42px;
+  color: #1a1a1a;
+  flex: 1;
+  font-variation-settings: 'wght' 600;
+}
+
+.subtext {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.subtext svg {
+  flex-shrink: 0;
+}
+
+.subtext span {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: -0.14px;
+  color: #67737E;
+  white-space: nowrap;
+  margin-top: 4px;
+}
+
+/* Scrollbar styling for dropdown */
+.dropdown-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dropdown-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dropdown-list::-webkit-scrollbar-thumb {
+  background-color: #d4dbe2;
+  border-radius: 4px;
+}
+
+.dropdown-list::-webkit-scrollbar-thumb:hover {
+  background-color: #b8c5d0;
+}
+
+/* Add to List Component Styles */
+.add-to-list-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.add-to-list-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s;
+  position: relative;
+}
+
+.add-to-list-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.add-to-list-button:active {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.add-to-list-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-to-list-icon img {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.add-to-list-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1a1a1a;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 450;
+  font-size: 14px;
+  line-height: 1.4;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  z-index: 1000;
+  font-variation-settings: 'wght' 450;
+}
+
+.add-to-list-button:hover .add-to-list-tooltip {
+  opacity: 1;
+}
+
+.context-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #ffffff;
+  border: 1px solid #e0e6eb;
+  border-radius: 12px;
+  padding: 8px 0;
+  min-width: 177px;
+  z-index: 1000;
+}
+
+.context-menu-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 4px 16px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.context-menu-item:hover {
+  background-color: #f9fafb;
+}
+
+.context-menu-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.context-menu-checkbox {
+  width: 16px;
+  height: 16px;
+  border: 1px solid #d4dbe2;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  transition: all 0.15s;
+}
+
+.context-menu-checkbox.checked {
+  border-color: #1a1a1a;
+  background-color: #fff;
+  color: #1a1a1a;
+  border-width: 1px;
+}
+
+.context-menu-checkbox svg {
+  width: 10px;
+  height: 8px;
+}
+
+.context-menu-item-text {
+  font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 22px;
+  letter-spacing: 0.42px;
+  color: #1a1a1a;
+  opacity: 0.8;
+  flex: 1;
+  font-variation-settings: 'wght' 600;
+}
+
+.context-menu-divider {
+  height: 1px;
+  background-color: #e0e6eb;
+  margin: 8px 0;
+}
+
+.context-menu-item-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.context-menu-item-icon img {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modal-content {
+  background-color: #ffffff;
+  border-radius: 24px;
+  width: 800px;
+  max-width: 90vw;
+  max-height: 90vh;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px;
+  padding-bottom: 12px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  background-color: #ffffff;
+  z-index: 5;
+}
+
+.modal-title {
+  font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 550;
+  font-size: 28px;
+  line-height: 36px;
+  letter-spacing: 0.56px;
+  color: #1a1a1a;
+  margin: 0;
+  flex: 1;
+  font-variation-settings: 'wght' 550;
+}
+
+.modal-close-button {
+  background-color: #ffffff;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  transition: background-color 0.15s;
+}
+
+.modal-close-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.modal-close-button img {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.modal-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modal-label {
+  font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0.48px;
+  color: #1a1a1a;
+  font-variation-settings: 'wght' 600;
+}
+
+.modal-input,
+.modal-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d4dbe2;
+  border-radius: 12px;
+  font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 450;
+  font-size: 14px;
+  line-height: 22px;
+  letter-spacing: 0.56px;
+  color: #1a1a1a;
+  background-color: #ffffff;
+  transition: border-color 0.2s;
+  font-variation-settings: 'wght' 450;
+}
+
+.modal-input:focus,
+.modal-textarea:focus {
+  outline: none;
+  border-color: #1a1a1a;
+}
+
+.modal-input::placeholder,
+.modal-textarea::placeholder {
+  color: #818b97;
+}
+
+.modal-textarea {
+  resize: vertical;
+  min-height: 100px;
+  font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 24px 24px;
+  flex-shrink: 0;
+  background-color: #ffffff;
+}
+
+.modal-button {
+  font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 22px;
+  letter-spacing: 0.42px;
+  cursor: pointer;
+  border: none;
+  border-radius: 24px;
+  transition: all 0.15s;
+  font-variation-settings: 'wght' 600;
+}
+
+.modal-button-cancel {
+  background: none;
+  color: #1a1a1a;
+  padding: 8px 16px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-button-cancel:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.modal-button-primary {
+  background-color: #108a00;
+  color: #ffffff;
+  padding: 10px 16px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+}
+
+.modal-button-primary:hover:not(:disabled) {
+  background-color: #0d7000;
+}
+
+.modal-button-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modal-button-primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(16, 138, 0, 0.2);
+}
