@@ -58,10 +58,10 @@ body {
   background-color: #ffffff;
   border: 1px solid #d4dbe2;
   border-radius: 12px;
-  height: 40px;
+  min-height: 40px;
   padding: 8px 12px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   cursor: text;
   transition: border-color 0.2s;
 }
@@ -75,7 +75,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  align-items: center;
+  align-items: flex-start;
   flex: 1;
   min-width: 164px;
 }
@@ -141,6 +141,7 @@ body {
   flex: 1;
   min-width: 50px;
   font-variation-settings: 'wght' 450;
+  margin-top: 1px;
 }
 
 .tag-input::placeholder {
