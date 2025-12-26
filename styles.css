@@ -182,7 +182,7 @@ body {
 }
 
 .dropdown-item.selected {
-  /* background-color: #f9fafb; */
+  /* Selected state styling - currently same as default */
 }
 
 .checkbox-wrapper {
@@ -628,4 +628,228 @@ body {
 .modal-button-primary:focus {
   outline: none;
   box-shadow: 0 0 0 2px rgba(16, 138, 0, 0.2);
+}
+
+/* Spinner Button Component Styles */
+.spinner-button-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.spinner-button {
+  font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 22px;
+  letter-spacing: 0.42px;
+  cursor: pointer;
+  border: none;
+  border-radius: 24px;
+  transition: all 0.15s;
+  font-variation-settings: 'wght' 600;
+  background-color: #108a00;
+  color: #ffffff;
+  padding: 10px 16px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  width: 151px;
+  box-sizing: border-box;
+}
+
+.spinner-button.loading,
+.spinner-button.completed {
+  gap: 0;
+  background-color: #108a00;
+}
+
+.spinner-button:hover:not(:disabled) {
+  background-color: #0d7000;
+}
+
+.spinner-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.9;
+}
+
+.spinner-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(16, 138, 0, 0.2);
+}
+
+.spinner-button-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.spinner-button-text,
+.spinner-icon,
+.checkmark-icon {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.7);
+  pointer-events: none;
+}
+
+.spinner-button-text {
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s, 
+              transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s;
+}
+
+.spinner-button-text.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.spinner-button-text.active.transitioning-from-completed {
+  animation: text-emerge 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+}
+
+.spinner-icon {
+  flex-shrink: 0;
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+              transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.spinner-icon.active {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+  animation: spin 1s linear infinite;
+}
+
+/* When spinner is leaving (transitioning to checkmark) */
+.spinner-icon:not(.active) {
+  animation: spinner-exit 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.checkmark-icon {
+  flex-shrink: 0;
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.15s, 
+              transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.15s;
+}
+
+.checkmark-icon.active {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+  animation: checkmark-emerge 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+}
+
+/* When checkmark is leaving (transitioning back to default) */
+.checkmark-icon:not(.active) {
+  animation: checkmark-exit 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes spin {
+  from {
+    transform: scale(1) rotate(0deg);
+  }
+  to {
+    transform: scale(1) rotate(360deg);
+  }
+}
+
+@keyframes spinner-exit {
+  0% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+  30% {
+    opacity: 0.7;
+    transform: scale(0.9) rotate(120deg);
+  }
+  60% {
+    opacity: 0.3;
+    transform: scale(0.8) rotate(240deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.75) rotate(360deg);
+  }
+}
+
+@keyframes checkmark-emerge {
+  0% {
+    opacity: 0;
+    transform: scale(0.6) rotate(-20deg);
+  }
+  20% {
+    opacity: 0.3;
+    transform: scale(0.75) rotate(-10deg);
+  }
+  40% {
+    opacity: 0.7;
+    transform: scale(0.95) rotate(5deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08) rotate(-2deg);
+  }
+  80% {
+    transform: scale(0.98) rotate(1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Animate the checkmark path drawing */
+.checkmark-icon.active path {
+  animation: checkmark-draw-path 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both;
+}
+
+@keyframes checkmark-draw-path {
+  0% {
+    stroke-dasharray: 0 20;
+    stroke-dashoffset: 20;
+  }
+  100% {
+    stroke-dasharray: 20 0;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes checkmark-exit {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateX(-15px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+}
+
+@keyframes text-emerge {
+  0% {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateX(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
