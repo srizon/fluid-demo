@@ -876,14 +876,29 @@ body {
   background-color: #ffffff;
   color: #1a1a1a;
   height: 40px;
-  min-width: 150px;
-  padding: 0 14px;
+  padding: 0 24px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   cursor: pointer;
   transition: background-color 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s, opacity 0.15s;
+}
+
+.counter-button--icon-on {
+  padding-left: 16px;
+}
+
+.counter-button--icon-off {
+  padding-left: 16px;
+}
+
+.counter-button--counter-on {
+  padding-right: 8px;
+}
+
+.counter-button--counter-off {
+  padding-right: 24px;
 }
 
 .counter-button:focus-visible {
@@ -932,11 +947,11 @@ body {
 
 .counter-controls {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  max-width: 420px;
+  max-width: none;
 }
 
 .counter-control-button {
@@ -1101,6 +1116,8 @@ body {
 .counter-button--corner {
   position: relative;
   overflow: visible;
+  padding-left: 24px;
+  padding-right: 24px;
 }
 
 .counter-button--corner .counter-button-badge {

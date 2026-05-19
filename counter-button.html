@@ -21,7 +21,7 @@
       return String(count);
     }
 
-    function CounterButton({ variant, unreadCount, isDisabled, option }) {
+    function CounterButton({ variant, unreadCount, isDisabled, option, showIcon }) {
       const badgeText = formatCount(unreadCount);
       const hasBadge = badgeText.length > 0;
 
@@ -34,15 +34,17 @@
       return (
         <button
           type="button"
-          className={`counter-button counter-button--${variant} counter-button--${option.id}`}
+          className={`counter-button counter-button--${variant} counter-button--${option.id} ${showIcon ? 'counter-button--icon-on' : 'counter-button--icon-off'} ${hasBadge ? 'counter-button--counter-on' : 'counter-button--counter-off'}`}
           aria-label={ariaLabel}
           disabled={isDisabled}
         >
-          <span className="counter-button-icon" aria-hidden="true">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M2.75 4.5C2.75 3.5335 3.5335 2.75 4.5 2.75H11.5C12.4665 2.75 13.25 3.5335 13.25 4.5V10.5C13.25 11.4665 12.4665 12.25 11.5 12.25H6.5L3.5 14.5V12.25H4.5C3.5335 12.25 2.75 11.4665 2.75 10.5V4.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
-            </svg>
-          </span>
+          {showIcon && (
+            <span className="counter-button-icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2.75 4.5C2.75 3.5335 3.5335 2.75 4.5 2.75H11.5C12.4665 2.75 13.25 3.5335 13.25 4.5V10.5C13.25 11.4665 12.4665 12.25 11.5 12.25H6.5L3.5 14.5V12.25H4.5C3.5335 12.25 2.75 11.4665 2.75 10.5V4.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+              </svg>
+            </span>
+          )}
           <span className="counter-button-label">Messages</span>
           {hasBadge && (
             <span className="counter-button-badge" aria-hidden="true">
@@ -56,6 +58,7 @@
     function CounterButtonComponent() {
       const [unreadCount, setUnreadCount] = useState(2);
       const [isDisabled, setIsDisabled] = useState(false);
+      const [showIcon, setShowIcon] = useState(true);
 
       const variants = ['primary', 'secondary', 'tertiary'];
       const counterOptions = [
@@ -98,6 +101,7 @@
                           unreadCount={unreadCount}
                           isDisabled={isDisabled}
                           option={option}
+                          showIcon={showIcon}
                         />
                         <div className="counter-option-label">{option.label}</div>
                       </div>
@@ -119,6 +123,13 @@
                 onClick={() => setIsDisabled((prev) => !prev)}
               >
                 {isDisabled ? 'Enable' : 'Disable'}
+              </button>
+              <button
+                type="button"
+                className="counter-control-button"
+                onClick={() => setShowIcon((prev) => !prev)}
+              >
+                {showIcon ? 'Hide icon' : 'Show icon'}
               </button>
             </div>
           </div>
