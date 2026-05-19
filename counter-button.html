@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Button with Counter</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useMemo, useState } = React;
+
+    function formatCount(count) {
+      if (count <= 0) return '';
+      if (count >= 100) return '99+';
+      return String(count);
+    }
+
+    function CounterButton({ variant, unreadCount, isDisabled, option }) {
+      const badgeText = formatCount(unreadCount);
+      const hasBadge = badgeText.length > 0;
+
+      const ariaLabel = useMemo(() => {
+        if (unreadCount <= 0) return `${variant} messages, no unread messages`;
+        if (unreadCount >= 100) return `${variant} messages, 99 plus unread messages`;
+        return `${variant} messages, ${unreadCount} unread messages`;
+      }, [unreadCount, variant]);
+
+      return (
+        <button
+          type="button"
+          className={`counter-button counter-button--${variant} counter-button--${option.id}`}
+          aria-label={ariaLabel}
+          disabled={isDisabled}
+        >
+          <span className="counter-button-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2.75 4.5C2.75 3.5335 3.5335 2.75 4.5 2.75H11.5C12.4665 2.75 13.25 3.5335 13.25 4.5V10.5C13.25 11.4665 12.4665 12.25 11.5 12.25H6.5L3.5 14.5V12.25H4.5C3.5335 12.25 2.75 11.4665 2.75 10.5V4.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+            </svg>
+          </span>
+          <span className="counter-button-label">Messages</span>
+          {hasBadge && (
+            <span className="counter-button-badge" aria-hidden="true">
+              {badgeText}
+            </span>
+          )}
+        </button>
+      );
+    }
+
+    function CounterButtonComponent() {
+      const [unreadCount, setUnreadCount] = useState(2);
+      const [isDisabled, setIsDisabled] = useState(false);
+
+      const variants = ['primary', 'secondary', 'tertiary'];
+      const counterOptions = [
+        { id: 'inline', label: 'Inline chip' },
+        { id: 'inline-soft', label: 'Inline soft chip' },
+        { id: 'corner', label: 'Top-right badge' },
+      ];
+
+      const incrementCount = () => {
+        setUnreadCount((prev) => Math.min(prev + 1, 999));
+      };
+
+      const decrementCount = () => {
+        setUnreadCount((prev) => Math.max(prev - 1, 0));
+      };
+
+      const setNinetyNine = () => {
+        setUnreadCount(99);
+      };
+
+      const setHundredPlus = () => {
+        setUnreadCount(100);
+      };
+
+      return (
+        <div className="container">
+          <div className="counter-button-wrapper">
+            <h1>Button with Counter</h1>
+            <div className="counter-variant-grid">
+              {variants.map((variant) => (
+                <div className="counter-variant-item" key={variant}>
+                  <div className="counter-variant-title">
+                    {variant.charAt(0).toUpperCase() + variant.slice(1)}
+                  </div>
+                  <div className="counter-options-row">
+                    {counterOptions.map((option) => (
+                      <div className="counter-option-item" key={option.id}>
+                        <CounterButton
+                          variant={variant}
+                          unreadCount={unreadCount}
+                          isDisabled={isDisabled}
+                          option={option}
+                        />
+                        <div className="counter-option-label">{option.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="counter-controls">
+              <button type="button" className="counter-control-button" onClick={decrementCount}>-1</button>
+              <button type="button" className="counter-control-button" onClick={incrementCount}>+1</button>
+              <button type="button" className="counter-control-button" onClick={() => setUnreadCount(0)}>Set 0</button>
+              <button type="button" className="counter-control-button" onClick={setNinetyNine}>Set 99</button>
+              <button type="button" className="counter-control-button" onClick={setHundredPlus}>Set 100</button>
+              <button
+                type="button"
+                className="counter-control-button"
+                onClick={() => setIsDisabled((prev) => !prev)}
+              >
+                {isDisabled ? 'Enable' : 'Disable'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<CounterButtonComponent />);
+  </script>
+</body>
+</html>

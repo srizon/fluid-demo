@@ -853,3 +853,293 @@ body {
     transform: translateX(0);
   }
 }
+
+/* Counter Button Component Styles */
+.counter-button-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  max-width: 1060px;
+}
+
+.counter-button {
+  font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 22px;
+  letter-spacing: 0.42px;
+  font-variation-settings: 'wght' 600;
+  border: 1px solid transparent;
+  border-radius: 24px;
+  background-color: #ffffff;
+  color: #1a1a1a;
+  height: 40px;
+  min-width: 150px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s, opacity 0.15s;
+}
+
+.counter-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #1a1a1a;
+}
+
+.counter-button:disabled {
+  cursor: not-allowed;
+  opacity: 1;
+  background-color: #e6eaf0;
+  color: #9aa4b2;
+  border-color: transparent;
+}
+
+.counter-button-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.counter-button-label {
+  white-space: nowrap;
+}
+
+.counter-button-badge {
+  min-width: 22px;
+  height: 20px;
+  border-radius: 9999px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.24px;
+  font-weight: 600;
+  font-variation-settings: 'wght' 600;
+  flex-shrink: 0;
+}
+
+.counter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 420px;
+}
+
+.counter-control-button {
+  background-color: #ffffff;
+  border: 1px solid #d4dbe2;
+  border-radius: 16px;
+  height: 32px;
+  padding: 0 12px;
+  cursor: pointer;
+  font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  letter-spacing: 0.24px;
+  color: #1a1a1a;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.counter-control-button:hover {
+  background-color: #f9fafb;
+}
+
+.counter-control-button:active {
+  background-color: #f3f5f7;
+}
+
+.counter-control-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(16, 138, 0, 0.2);
+}
+
+.counter-variant-grid {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+  width: 100%;
+}
+
+.counter-variant-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  border: 1px solid #e6eaf0;
+  border-radius: 16px;
+  padding: 16px;
+  background-color: #ffffff;
+}
+
+.counter-variant-title {
+  font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 13px;
+  line-height: 18px;
+  letter-spacing: 0.24px;
+  color: #67737E;
+  font-weight: 600;
+  font-variation-settings: 'wght' 600;
+  width: 84px;
+  padding-top: 10px;
+  flex-shrink: 0;
+}
+
+.counter-options-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.counter-option-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.counter-option-label {
+  font-family: 'PP Neue Montreal', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.2px;
+  color: #67737E;
+  font-weight: 450;
+  font-variation-settings: 'wght' 450;
+}
+
+.counter-button--primary {
+  background-color: #108a00;
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.counter-button--primary:hover:not(:disabled) {
+  background-color: #0c7400;
+}
+
+.counter-button--primary:active:not(:disabled) {
+  background-color: #0a5f00;
+}
+
+.counter-button--primary .counter-button-badge {
+  background-color: #ffffff;
+  color: #0d7000;
+}
+
+.counter-button--secondary {
+  background-color: #ffffff;
+  color: #108a00;
+  border-color: #108a00;
+}
+
+.counter-button--secondary:hover:not(:disabled) {
+  background-color: #f6faf5;
+  border-color: #108a00;
+}
+
+.counter-button--secondary:active:not(:disabled) {
+  background-color: #edf6ec;
+  border-color: #0e7a00;
+}
+
+.counter-button--secondary .counter-button-badge {
+  background-color: #108a00;
+  color: #ffffff;
+}
+
+.counter-button--tertiary {
+  background-color: #ffffff;
+  color: #1a1a1a;
+  border-color: #c5ccd3;
+}
+
+.counter-button--tertiary:hover:not(:disabled) {
+  background-color: #f1f3f5;
+  border-color: #c5ccd3;
+}
+
+.counter-button--tertiary:active:not(:disabled) {
+  background-color: #e6eaef;
+  border-color: #bac3cb;
+}
+
+.counter-button--tertiary .counter-button-badge {
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+.counter-button--inline-soft .counter-button-badge {
+  background-color: #eef2f7;
+  color: #374250;
+}
+
+.counter-button--primary.counter-button--inline-soft .counter-button-badge {
+  background-color: #d7efcf;
+  color: #0d7000;
+}
+
+.counter-button--secondary.counter-button--inline-soft .counter-button-badge {
+  background-color: #eef9ec;
+  color: #108a00;
+}
+
+.counter-button--corner {
+  position: relative;
+  overflow: visible;
+}
+
+.counter-button--corner .counter-button-badge {
+  position: absolute;
+  top: -8px;
+  right: -4px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 5px;
+  border: 2px solid #ffffff;
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.counter-button--primary.counter-button--corner .counter-button-badge {
+  background-color: #108a00;
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+.counter-button--secondary.counter-button--corner .counter-button-badge {
+  background-color: #108a00;
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+.counter-button--tertiary.counter-button--corner .counter-button-badge {
+  background-color: #eef2f7;
+  color: #374250;
+  border-color: #ffffff;
+}
+
+/* Keep all counter chips gray when the parent button is disabled. */
+.counter-button:disabled .counter-button-badge {
+  background-color: #c9d0d9;
+  color: #8d97a6;
+}
+
+.counter-button:disabled.counter-button--corner .counter-button-badge {
+  background-color: #e6eaf0;
+  border-color: #ffffff;
+}
