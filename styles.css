@@ -898,7 +898,7 @@ body {
 }
 
 .counter-button--counter-off {
-  padding-right: 24px;
+  padding-right: 16px;
 }
 
 .counter-button:focus-visible {
