@@ -1113,6 +1113,11 @@ body {
   color: #108a00;
 }
 
+.counter-button--secondary.counter-button--inline-soft:hover:not(:disabled) .counter-button-badge,
+.counter-button--tertiary.counter-button--inline-soft:hover:not(:disabled) .counter-button-badge {
+  box-shadow: inset 0 0 0 1px #ffffff;
+}
+
 .counter-button--corner {
   position: relative;
   overflow: visible;
