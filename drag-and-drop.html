@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drag and drop</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dnd-page">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useRef, useCallback, useLayoutEffect, useMemo } = React;
+
+    const DRAG_HYSTERESIS = 10;
+    const ROW_HEIGHT = 48;
+    const SLOT_BLOCK_HEIGHT = 56;
+
+    const INITIAL_SECTIONS = [
+      {
+        id: 'section-1',
+        title: 'Section 1',
+        collapsed: false,
+        items: [
+          { id: 's1-i1', name: 'James Whitfield', description: 'Website redesign for nonprofit donation portal' },
+          { id: 's1-i2', name: 'Priya Sharma', description: 'Mobile app UX audit and usability report' },
+        ],
+      },
+      {
+        id: 'section-2',
+        title: 'Section 2',
+        collapsed: false,
+        items: [
+          { id: 's2-i1', name: 'Elena Novak', description: 'E-commerce product photography and retouching' },
+          { id: 's2-i2', name: 'Marcus Chen', description: 'Python automation for inventory sync' },
+          { id: 's2-i3', name: 'Sofia Andersson', description: 'Brand identity refresh and logo variations' },
+        ],
+      },
+      {
+        id: 'section-3',
+        title: 'Section 3',
+        collapsed: false,
+        items: [
+          { id: 's3-i1', name: 'David Okonkwo', description: 'Technical documentation for API integration guide' },
+          { id: 's3-i2', name: 'Rachel Kim', description: 'Social media content calendar for Q3 launch' },
+        ],
+      },
+    ];
+
+    function getAvatarUrl(itemId) {
+      return `https://i.pravatar.cc/64?u=${encodeURIComponent(itemId)}`;
+    }
+
+    function setStackedDragImage(dataTransfer, rowElement, count) {
+      if (!rowElement) return;
+
+      if (count <= 1) {
+        dataTransfer.setDragImage(rowElement, 24, rowElement.offsetHeight / 2);
+        return;
+      }
+
+      const ghost = document.createElement('div');
+      ghost.className = 'dnd-drag-ghost-stack';
+
+      const width = rowElement.offsetWidth;
+      const height = rowElement.offsetHeight;
+      const layers = Math.min(count, 3);
+      const offset = 6;
+      const layerBackground = rowElement.classList.contains('is-selected') ? '#f3f5f7' : '#ffffff';
+
+      ghost.style.width = `${width}px`;
+      ghost.style.height = `${height + (layers - 1) * offset}px`;
+
+      for (let layerIndex = layers - 1; layerIndex >= 0; layerIndex -= 1) {
+        const layer = rowElement.cloneNode(true);
+        layer.classList.remove('dragging');
+        layer.classList.add('dnd-drag-ghost-layer');
+        layer.style.position = 'absolute';
+        layer.style.top = `${layerIndex * offset}px`;
+        layer.style.left = '0';
+        layer.style.width = `${width}px`;
+        layer.style.height = `${height}px`;
+        layer.style.margin = '0';
+        layer.style.boxSizing = 'border-box';
+        layer.style.display = 'flex';
+        layer.style.backgroundColor = layerBackground;
+        layer.style.borderRadius = '8px';
+        layer.style.border = '1px solid #e0e6eb';
+        layer.style.opacity = String(1 - layerIndex * 0.08);
+        layer.style.boxShadow =
+          layerIndex === 0 ? '0 4px 12px rgba(26, 26, 26, 0.08)' : '0 2px 8px rgba(26, 26, 26, 0.12)';
+        layer.style.pointerEvents = 'none';
+        ghost.appendChild(layer);
+      }
+
+      const badge = document.createElement('span');
+      badge.className = 'dnd-drag-ghost-badge';
+      badge.textContent = String(count);
+      ghost.appendChild(badge);
+
+      document.body.appendChild(ghost);
+
+      dataTransfer.setDragImage(
+        ghost,
+        24,
+        rowElement.offsetHeight / 2
+      );
+
+      window.setTimeout(() => {
+        ghost.remove();
+      }, 0);
+    }
+
+    function getItemsToDrag(itemId, selectedIds, sections) {
+      if (!selectedIds.has(itemId) || selectedIds.size <= 1) {
+        return [itemId];
+      }
+
+      const orderedIds = [];
+      for (const section of sections) {
+        for (const item of section.items) {
+          if (selectedIds.has(item.id)) orderedIds.push(item.id);
+        }
+      }
+      return orderedIds;
+    }
+
+    function DragHandle({ onDragStart, onDragEnd }) {
+      return (
+        <button
+          type="button"
+          className="dnd-drag-handle"
+          draggable
+          onDragStart={onDragStart}
+          onDragEnd={onDragEnd}
+          aria-label="Drag to reorder"
+        >
+          <img src="assets/drag-and-drop/icon-grip.svg" alt="" />
+        </button>
+      );
+    }
+
+    function computeInsertIndex(container, items, clientY, activeInsertIndex) {
+      const containerTop = container.getBoundingClientRect().top;
+      let y = containerTop;
+
+      for (let index = 0; index <= items.length; index += 1) {
+        if (activeInsertIndex === index) {
+          if (clientY < y + SLOT_BLOCK_HEIGHT / 2) return index;
+          y += SLOT_BLOCK_HEIGHT;
+        }
+
+        if (index < items.length) {
+          if (clientY < y + ROW_HEIGHT / 2) return index;
+          y += ROW_HEIGHT;
+        }
+      }
+
+      return items.length;
+    }
+
+    function computeInsertIndexWithHysteresis(container, items, clientY, activeInsertIndex, previous) {
+      const nextIndex = computeInsertIndex(container, items, clientY, activeInsertIndex);
+
+      if (
+        previous.insertIndex === null ||
+        previous.insertIndex === nextIndex ||
+        previous.clientY === null
+      ) {
+        return nextIndex;
+      }
+
+      const boundaryY = getInsertBoundaryY(
+        container,
+        items,
+        activeInsertIndex,
+        previous.insertIndex,
+        nextIndex
+      );
+      if (boundaryY === null) return nextIndex;
+
+      const movingDown = nextIndex > previous.insertIndex;
+      if (movingDown && clientY < boundaryY + DRAG_HYSTERESIS) return previous.insertIndex;
+      if (!movingDown && clientY > boundaryY - DRAG_HYSTERESIS) return previous.insertIndex;
+
+      return nextIndex;
+    }
+
+    function getInsertBoundaryY(container, items, activeInsertIndex, fromIndex, toIndex) {
+      const boundaryIndex = Math.max(fromIndex, toIndex);
+      const containerTop = container.getBoundingClientRect().top;
+      let y = containerTop;
+
+      for (let index = 0; index < boundaryIndex; index += 1) {
+        if (activeInsertIndex === index) y += SLOT_BLOCK_HEIGHT;
+        y += ROW_HEIGHT;
+      }
+
+      if (activeInsertIndex === boundaryIndex) {
+        return y + SLOT_BLOCK_HEIGHT / 2;
+      }
+
+      return y;
+    }
+
+    function isSameDropTarget(a, sectionId, insertIndex) {
+      return a.overSectionId === sectionId && a.overInsertIndex === insertIndex;
+    }
+
+    function DropSlot({ active }) {
+      return (
+        <div className={`dnd-drop-slot ${active ? 'active' : ''}`} aria-hidden="true">
+          <div className="dnd-drop-slot-inner" />
+        </div>
+      );
+    }
+
+    function useFlipAnimation(orderKey, enabled) {
+      const positionsRef = useRef(new Map());
+
+      useLayoutEffect(() => {
+        if (!enabled) {
+          positionsRef.current = new Map();
+          return;
+        }
+
+        const elements = document.querySelectorAll('.dnd-drop-target[data-item-id]');
+        const nextPositions = new Map();
+
+        elements.forEach((element) => {
+          const itemId = element.dataset.itemId;
+          const top = element.getBoundingClientRect().top;
+          nextPositions.set(itemId, top);
+
+          const previousTop = positionsRef.current.get(itemId);
+          if (previousTop === undefined || Math.abs(previousTop - top) < 1) return;
+
+          const deltaY = previousTop - top;
+          element.style.transition = 'none';
+          element.style.transform = `translateY(${deltaY}px)`;
+
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              element.style.transition = 'transform 0.25s cubic-bezier(0.2, 0, 0, 1)';
+              element.style.transform = '';
+
+              const cleanup = (event) => {
+                if (event.propertyName !== 'transform') return;
+                element.style.transition = '';
+                element.style.transform = '';
+              };
+              element.addEventListener('transitionend', cleanup, { once: true });
+            });
+          });
+        });
+
+        positionsRef.current = nextPositions;
+      }, [orderKey, enabled]);
+    }
+
+    function getSelectionPositionClass(isSelected, prevSelected, nextSelected) {
+      if (!isSelected) return '';
+      if (prevSelected && nextSelected) return 'is-selected-middle';
+      if (prevSelected) return 'is-selected-end';
+      if (nextSelected) return 'is-selected-start';
+      return '';
+    }
+
+    function ListItemRow({
+      item,
+      itemIndex,
+      isDragging,
+      isSelected,
+      prevSelected,
+      nextSelected,
+      onToggleSelect,
+      onDragStart,
+      onDragEnd,
+    }) {
+      const rowRef = useRef(null);
+
+      const handleDragStart = (e) => {
+        e.stopPropagation();
+        onDragStart(e, rowRef.current);
+      };
+
+      const handleRowClick = (e) => {
+        if (e.target.closest('.dnd-drag-handle, .dnd-list-row-action')) return;
+        onToggleSelect(item.id);
+      };
+
+      const handleRowKeyDown = (e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        if (e.target.closest('.dnd-drag-handle, .dnd-list-row-action')) return;
+        e.preventDefault();
+        onToggleSelect(item.id);
+      };
+
+      return (
+        <div className="dnd-drop-target" data-item-id={item.id} data-item-index={itemIndex}>
+          <div
+            ref={rowRef}
+            className={`dnd-list-row ${isDragging ? 'dragging' : ''} ${isSelected ? 'is-selected' : ''} ${getSelectionPositionClass(isSelected, prevSelected, nextSelected)}`}
+            onClick={handleRowClick}
+            onKeyDown={handleRowKeyDown}
+            role="button"
+            tabIndex={0}
+            aria-pressed={isSelected}
+          >
+            <div className="dnd-list-row-controls">
+              <DragHandle onDragStart={handleDragStart} onDragEnd={onDragEnd} />
+              <div className="dnd-checkbox" aria-hidden="true">
+                <img
+                  src={
+                    isSelected
+                      ? 'assets/drag-and-drop/checkbox-checked.svg'
+                      : 'assets/drag-and-drop/checkbox-uncheked.svg'
+                  }
+                  alt=""
+                />
+              </div>
+            </div>
+            <div className="dnd-list-row-content">
+              <div className="dnd-avatar">
+                <img src={getAvatarUrl(item.id)} alt="" />
+              </div>
+              <div className="dnd-list-row-text">
+                <p className="dnd-list-row-name">{item.name}</p>
+                <p className="dnd-list-row-description">{item.description}</p>
+              </div>
+            </div>
+            <div className="dnd-list-row-action">Contract</div>
+          </div>
+        </div>
+      );
+    }
+
+    function Section({
+      section,
+      dragState,
+      isDragging,
+      selectedIds,
+      dragPointerRef,
+      onToggleCollapse,
+      onToggleSelect,
+      onItemDragStart,
+      onItemDragEnd,
+      onItemsDragOver,
+      onItemsDrop,
+      onSectionDragOver,
+      onSectionDrop,
+    }) {
+      const itemsRef = useRef(null);
+      const isCrossSectionHover =
+        dragState.draggedItemIds.length > 0 &&
+        dragState.overSectionId === section.id &&
+        dragState.sourceSectionId !== section.id;
+
+      const handleSectionDragOver = (e) => {
+        e.preventDefault();
+        onSectionDragOver(section.id);
+      };
+
+      const handleSectionDrop = (e) => {
+        e.preventDefault();
+        onSectionDrop(section.id);
+      };
+
+      const handleItemsDragOver = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!itemsRef.current || section.collapsed) return;
+
+        const activeInsertIndex =
+          dragState.overSectionId === section.id
+            ? dragPointerRef.current.insertIndex ?? dragState.overInsertIndex
+            : null;
+
+        const insertIndex = computeInsertIndexWithHysteresis(
+          itemsRef.current,
+          section.items,
+          e.clientY,
+          activeInsertIndex,
+          dragPointerRef.current
+        );
+
+        dragPointerRef.current = {
+          insertIndex,
+          clientY: e.clientY,
+        };
+
+        onItemsDragOver(section.id, insertIndex);
+      };
+
+      const handleItemsDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onItemsDrop(section.id);
+      };
+
+      return (
+        <div
+          className={`dnd-section ${isCrossSectionHover ? 'drag-over' : ''} ${!section.collapsed ? 'is-expanded' : ''}`}
+          onDragOver={handleSectionDragOver}
+          onDrop={handleSectionDrop}
+        >
+          <div className="dnd-section-header">
+            <button
+              type="button"
+              className="dnd-icon-button"
+              onClick={() => onToggleCollapse(section.id)}
+              aria-label={section.collapsed ? 'Expand section' : 'Collapse section'}
+              aria-expanded={!section.collapsed}
+            >
+              <img
+                src="assets/drag-and-drop/icon-chevron.svg"
+                alt=""
+                className={`dnd-chevron ${section.collapsed ? 'collapsed' : ''}`}
+              />
+            </button>
+            <img src="assets/drag-and-drop/icon-folder.svg" alt="" className="dnd-folder-icon" />
+            <span className="dnd-section-title">{section.title}</span>
+            <span className="dnd-section-count">({section.items.length})</span>
+            <div className="dnd-section-actions">
+              <button type="button" className="dnd-icon-button" aria-label="Edit section">
+                <img src="assets/drag-and-drop/icon-edit.svg" alt="" />
+              </button>
+              <button type="button" className="dnd-icon-button" aria-label="Delete section">
+                <img src="assets/drag-and-drop/icon-delete.svg" alt="" />
+              </button>
+            </div>
+          </div>
+
+          <div className="dnd-section-body">
+            <div className="dnd-section-body-inner" aria-hidden={section.collapsed}>
+              <div
+                ref={itemsRef}
+                className="dnd-section-items"
+                onDragOver={handleItemsDragOver}
+                onDrop={handleItemsDrop}
+              >
+                {section.items.length === 0 ? (
+                  <div
+                    className={`dnd-empty-drop-zone ${isCrossSectionHover ? 'active' : ''}`}
+                    onDragOver={handleSectionDragOver}
+                    onDrop={handleSectionDrop}
+                  >
+                    Drop items here
+                  </div>
+                ) : (
+                  section.items.map((item, itemIndex) => (
+                    <React.Fragment key={item.id}>
+                      <DropSlot
+                        active={
+                          isDragging &&
+                          !section.collapsed &&
+                          dragState.overSectionId === section.id &&
+                          dragState.overInsertIndex === itemIndex
+                        }
+                      />
+                      <ListItemRow
+                        item={item}
+                        itemIndex={itemIndex}
+                        isDragging={dragState.draggedItemIds.includes(item.id)}
+                        isSelected={selectedIds.has(item.id)}
+                        prevSelected={
+                          itemIndex > 0 && selectedIds.has(section.items[itemIndex - 1].id)
+                        }
+                        nextSelected={
+                          itemIndex < section.items.length - 1 &&
+                          selectedIds.has(section.items[itemIndex + 1].id)
+                        }
+                        onToggleSelect={onToggleSelect}
+                        onDragStart={(e, rowElement) => onItemDragStart(e, section.id, item.id, rowElement)}
+                        onDragEnd={onItemDragEnd}
+                      />
+                    </React.Fragment>
+                  ))
+                )}
+                {section.items.length > 0 && (
+                  <DropSlot
+                    active={
+                      isDragging &&
+                      !section.collapsed &&
+                      dragState.overSectionId === section.id &&
+                      dragState.overInsertIndex === section.items.length
+                    }
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function DragAndDropComponent() {
+      const [sections, setSections] = useState(INITIAL_SECTIONS);
+      const [selectedIds, setSelectedIds] = useState(() => new Set());
+      const [dragState, setDragState] = useState({
+        draggedItemIds: [],
+        sourceSectionId: null,
+        overSectionId: null,
+        overInsertIndex: null,
+      });
+
+      const dragPayload = useRef(null);
+      const dragPointerRef = useRef({ insertIndex: null, clientY: null });
+      const isDragging = dragState.draggedItemIds.length > 0;
+
+      const flipOrderKey = useMemo(
+        () => sections.map((section) => section.items.map((item) => item.id).join(',')).join('|'),
+        [sections]
+      );
+
+      useFlipAnimation(flipOrderKey, !isDragging);
+
+      const toggleSelection = useCallback((itemId) => {
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          if (next.has(itemId)) next.delete(itemId);
+          else next.add(itemId);
+          return next;
+        });
+      }, []);
+
+      const resetDragState = useCallback(() => {
+        setDragState({
+          draggedItemIds: [],
+          sourceSectionId: null,
+          overSectionId: null,
+          overInsertIndex: null,
+        });
+        dragPayload.current = null;
+        dragPointerRef.current = { insertIndex: null, clientY: null };
+      }, []);
+
+      const moveItems = useCallback((itemIds, targetSectionId, targetIndex) => {
+        if (itemIds.length === 0) return;
+
+        setSections((prev) => {
+          const next = prev.map((section) => ({
+            ...section,
+            items: [...section.items],
+          }));
+
+          const idOrder = new Map(itemIds.map((id, index) => [id, index]));
+          const itemsToMove = [];
+
+          for (const section of next) {
+            for (const item of section.items) {
+              if (idOrder.has(item.id)) {
+                itemsToMove.push({ item, order: idOrder.get(item.id) });
+              }
+            }
+          }
+
+          itemsToMove.sort((a, b) => a.order - b.order);
+
+          const targetSectionOriginal = prev.find((section) => section.id === targetSectionId);
+          if (!targetSectionOriginal) return prev;
+
+          let insertIndex = targetIndex;
+          for (let index = 0; index < targetIndex && index < targetSectionOriginal.items.length; index += 1) {
+            if (itemIds.includes(targetSectionOriginal.items[index].id)) {
+              insertIndex -= 1;
+            }
+          }
+
+          for (const { item } of itemsToMove) {
+            for (const section of next) {
+              const itemIndex = section.items.findIndex((entry) => entry.id === item.id);
+              if (itemIndex !== -1) {
+                section.items.splice(itemIndex, 1);
+                break;
+              }
+            }
+          }
+
+          const targetSection = next.find((section) => section.id === targetSectionId);
+          if (!targetSection) return prev;
+
+          insertIndex = Math.max(0, Math.min(insertIndex, targetSection.items.length));
+          targetSection.items.splice(
+            insertIndex,
+            0,
+            ...itemsToMove.map(({ item }) => item)
+          );
+
+          return next;
+        });
+      }, []);
+
+      const handleItemDragStart = (e, sectionId, itemId, rowElement) => {
+        const itemIds = getItemsToDrag(itemId, selectedIds, sections);
+
+        setStackedDragImage(e.dataTransfer, rowElement, itemIds.length);
+
+        dragPayload.current = { sectionId, itemIds };
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', itemIds.join(','));
+
+        setDragState({
+          draggedItemIds: itemIds,
+          sourceSectionId: sectionId,
+          overSectionId: null,
+          overInsertIndex: null,
+        });
+        dragPointerRef.current = { insertIndex: null, clientY: null };
+      };
+
+      const handleItemDragEnd = () => {
+        resetDragState();
+      };
+
+      const handleItemsDragOver = (sectionId, insertIndex) => {
+        if (!dragPayload.current) return;
+        setDragState((prev) => {
+          if (isSameDropTarget(prev, sectionId, insertIndex)) return prev;
+          return {
+            ...prev,
+            overSectionId: sectionId,
+            overInsertIndex: insertIndex,
+          };
+        });
+      };
+
+      const handleItemsDrop = (sectionId) => {
+        if (!dragPayload.current) return;
+
+        const { itemIds } = dragPayload.current;
+        const fallbackIndex = sections.find((s) => s.id === sectionId)?.items.length ?? 0;
+        const insertIndex = dragPointerRef.current.insertIndex ?? fallbackIndex;
+
+        moveItems(itemIds, sectionId, insertIndex);
+        resetDragState();
+      };
+
+      const handleSectionDragOver = (sectionId) => {
+        if (!dragPayload.current) return;
+        const targetSection = sections.find((s) => s.id === sectionId);
+        if (!targetSection) return;
+
+        const insertIndex = targetSection.items.length;
+        setDragState((prev) => {
+          if (isSameDropTarget(prev, sectionId, insertIndex)) return prev;
+          return {
+            ...prev,
+            overSectionId: sectionId,
+            overInsertIndex: insertIndex,
+          };
+        });
+      };
+
+      const handleSectionDrop = (sectionId) => {
+        if (!dragPayload.current) return;
+
+        const { itemIds } = dragPayload.current;
+        const targetSection = sections.find((s) => s.id === sectionId);
+        if (!targetSection) {
+          resetDragState();
+          return;
+        }
+
+        moveItems(itemIds, sectionId, targetSection.items.length);
+        resetDragState();
+      };
+
+      const handleToggleCollapse = (sectionId) => {
+        setSections((prev) =>
+          prev.map((section) =>
+            section.id === sectionId
+              ? { ...section, collapsed: !section.collapsed }
+              : section
+          )
+        );
+      };
+
+      return (
+        <div className="dnd-container">
+          <div className={`dnd-list ${isDragging ? 'is-dragging' : ''}`}>
+            <h1 className="dnd-page-title">Drag and drop</h1>
+            {sections.map((section) => (
+              <Section
+                key={section.id}
+                section={section}
+                dragState={dragState}
+                isDragging={isDragging}
+                selectedIds={selectedIds}
+                onToggleCollapse={handleToggleCollapse}
+                onToggleSelect={toggleSelection}
+                onItemDragStart={handleItemDragStart}
+                onItemDragEnd={handleItemDragEnd}
+                onItemsDragOver={handleItemsDragOver}
+                onItemsDrop={handleItemsDrop}
+                onSectionDragOver={handleSectionDragOver}
+                onSectionDrop={handleSectionDrop}
+                dragPointerRef={dragPointerRef}
+              />
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<DragAndDropComponent />);
+  </script>
+</body>
+</html>
