@@ -4,10 +4,35 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Add to List Component</title>
+  <style>html:not(.css-ready) body { visibility: hidden; }</style>
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    window.whenStylesReady = function (callback) {
+      var link = document.querySelector('link[rel="stylesheet"][href="styles.css"]');
+      if (!link || link.sheet) {
+        callback();
+        return;
+      }
+      link.addEventListener('load', callback, { once: true });
+      link.addEventListener('error', callback, { once: true });
+    };
+    (function () {
+      var link = document.querySelector('link[rel="stylesheet"][href="styles.css"]');
+      function reveal() {
+        document.documentElement.classList.add('css-ready');
+      }
+      if (!link || link.sheet) {
+        reveal();
+        return;
+      }
+      link.addEventListener('load', reveal, { once: true });
+      link.addEventListener('error', reveal, { once: true });
+      setTimeout(reveal, 4000);
+    })();
+  </script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div id="root"></div>
@@ -226,8 +251,10 @@
       );
     }
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<AddToListComponent />);
+    whenStylesReady(function () {
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<AddToListComponent />);
+    });
   </script>
 </body>
 </html>
