@@ -4,37 +4,84 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Drag and drop</title>
-  <style>html:not(.css-ready) body { visibility: hidden; }</style>
+  <style>
+    html:not(.app-ready) #root { visibility: hidden; }
+    #page-skeleton {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    html.skeleton-visible:not(.app-ready) #page-skeleton {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+    .page-skeleton--dnd { align-items: flex-start; padding-top: 80px; }
+    .skeleton-shimmer {
+      background: linear-gradient(90deg, #eef1f4 25%, #f8f9fa 50%, #eef1f4 75%);
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.4s ease-in-out infinite;
+      border-radius: 8px;
+    }
+    @keyframes skeleton-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+  </style>
   <link rel="stylesheet" href="styles.css">
-  <script>
-    window.whenStylesReady = function (callback) {
-      var link = document.querySelector('link[rel="stylesheet"][href="styles.css"]');
-      if (!link || link.sheet) {
-        callback();
-        return;
-      }
-      link.addEventListener('load', callback, { once: true });
-      link.addEventListener('error', callback, { once: true });
-    };
-    (function () {
-      var link = document.querySelector('link[rel="stylesheet"][href="styles.css"]');
-      function reveal() {
-        document.documentElement.classList.add('css-ready');
-      }
-      if (!link || link.sheet) {
-        reveal();
-        return;
-      }
-      link.addEventListener('load', reveal, { once: true });
-      link.addEventListener('error', reveal, { once: true });
-      setTimeout(reveal, 4000);
-    })();
-  </script>
+  <script src="load-bootstrap.js"></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body class="dnd-page">
+  <div id="page-skeleton" class="page-skeleton page-skeleton--dnd" aria-busy="true" aria-label="Loading drag and drop list">
+    <div class="page-skeleton-panel page-skeleton-panel--dnd">
+      <div class="skeleton-shimmer skeleton-block--page-title"></div>
+      <div class="skeleton-section">
+        <div class="skeleton-section-header">
+          <div class="skeleton-shimmer"></div>
+          <div class="skeleton-shimmer"></div>
+          <div class="skeleton-shimmer"></div>
+        </div>
+        <div class="skeleton-row">
+          <div class="skeleton-shimmer skeleton-row-avatar"></div>
+          <div class="skeleton-row-lines">
+            <div class="skeleton-shimmer"></div>
+            <div class="skeleton-shimmer"></div>
+          </div>
+        </div>
+        <div class="skeleton-row">
+          <div class="skeleton-shimmer skeleton-row-avatar"></div>
+          <div class="skeleton-row-lines">
+            <div class="skeleton-shimmer"></div>
+            <div class="skeleton-shimmer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="skeleton-section">
+        <div class="skeleton-section-header">
+          <div class="skeleton-shimmer"></div>
+          <div class="skeleton-shimmer"></div>
+          <div class="skeleton-shimmer"></div>
+        </div>
+        <div class="skeleton-row">
+          <div class="skeleton-shimmer skeleton-row-avatar"></div>
+          <div class="skeleton-row-lines">
+            <div class="skeleton-shimmer"></div>
+            <div class="skeleton-shimmer"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div id="root"></div>
 
   <script type="text/babel">
@@ -79,11 +126,19 @@
       return `https://i.pravatar.cc/64?u=${encodeURIComponent(itemId)}`;
     }
 
-    function setStackedDragImage(dataTransfer, rowElement, count) {
+    function getDragImageOffset(rowElement, clientX, clientY) {
+      const rect = rowElement.getBoundingClientRect();
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top,
+      };
+    }
+
+    function setStackedDragImage(dataTransfer, rowElement, count, offsetX, offsetY) {
       if (!rowElement) return;
 
       if (count <= 1) {
-        dataTransfer.setDragImage(rowElement, 24, rowElement.offsetHeight / 2);
+        dataTransfer.setDragImage(rowElement, offsetX, offsetY);
         return;
       }
 
@@ -128,11 +183,7 @@
 
       document.body.appendChild(ghost);
 
-      dataTransfer.setDragImage(
-        ghost,
-        24,
-        rowElement.offsetHeight / 2
-      );
+      dataTransfer.setDragImage(ghost, offsetX, offsetY);
 
       window.setTimeout(() => {
         ghost.remove();
@@ -153,18 +204,11 @@
       return orderedIds;
     }
 
-    function DragHandle({ onDragStart, onDragEnd }) {
+    function DragHandle() {
       return (
-        <button
-          type="button"
-          className="dnd-drag-handle"
-          draggable
-          onDragStart={onDragStart}
-          onDragEnd={onDragEnd}
-          aria-label="Drag to reorder"
-        >
+        <span className="dnd-drag-handle" aria-hidden="true">
           <img src="assets/drag-and-drop/icon-grip.svg" alt="" />
-        </button>
+        </span>
       );
     }
 
@@ -308,18 +352,18 @@
       const rowRef = useRef(null);
 
       const handleDragStart = (e) => {
-        e.stopPropagation();
+        if (e.target.closest('.dnd-list-row-action')) return;
         onDragStart(e, rowRef.current);
       };
 
       const handleRowClick = (e) => {
-        if (e.target.closest('.dnd-drag-handle, .dnd-list-row-action')) return;
+        if (e.target.closest('.dnd-list-row-action')) return;
         onToggleSelect(item.id);
       };
 
       const handleRowKeyDown = (e) => {
         if (e.key !== 'Enter' && e.key !== ' ') return;
-        if (e.target.closest('.dnd-drag-handle, .dnd-list-row-action')) return;
+        if (e.target.closest('.dnd-list-row-action')) return;
         e.preventDefault();
         onToggleSelect(item.id);
       };
@@ -329,14 +373,18 @@
           <div
             ref={rowRef}
             className={`dnd-list-row ${isDragging ? 'dragging' : ''} ${isSelected ? 'is-selected' : ''} ${getSelectionPositionClass(isSelected, prevSelected, nextSelected)}`}
+            draggable
+            onDragStart={handleDragStart}
+            onDragEnd={onDragEnd}
             onClick={handleRowClick}
             onKeyDown={handleRowKeyDown}
             role="button"
             tabIndex={0}
             aria-pressed={isSelected}
+            aria-label={`${item.name}, drag to reorder`}
           >
             <div className="dnd-list-row-controls">
-              <DragHandle onDragStart={handleDragStart} onDragEnd={onDragEnd} />
+              <DragHandle />
               <div className="dnd-checkbox" aria-hidden="true">
                 <img
                   src={
@@ -357,7 +405,7 @@
                 <p className="dnd-list-row-description">{item.description}</p>
               </div>
             </div>
-            <div className="dnd-list-row-action">Contract</div>
+            <div className="dnd-list-row-action" draggable={false}>Contract</div>
           </div>
         </div>
       );
@@ -621,8 +669,9 @@
 
       const handleItemDragStart = (e, sectionId, itemId, rowElement) => {
         const itemIds = getItemsToDrag(itemId, selectedIds, sections);
+        const { x: offsetX, y: offsetY } = getDragImageOffset(rowElement, e.clientX, e.clientY);
 
-        setStackedDragImage(e.dataTransfer, rowElement, itemIds.length);
+        setStackedDragImage(e.dataTransfer, rowElement, itemIds.length, offsetX, offsetY);
 
         dragPayload.current = { sectionId, itemIds };
         e.dataTransfer.effectAllowed = 'move';
@@ -731,7 +780,7 @@
       );
     }
 
-    whenStylesReady(function () {
+    mountWhenReady(function () {
       const root = ReactDOM.createRoot(document.getElementById('root'));
       root.render(<DragAndDropComponent />);
     });

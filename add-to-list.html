@@ -4,37 +4,46 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Add to List Component</title>
-  <style>html:not(.css-ready) body { visibility: hidden; }</style>
+  <style>
+    html:not(.app-ready) #root { visibility: hidden; }
+    #page-skeleton {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    html.skeleton-visible:not(.app-ready) #page-skeleton {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+    .skeleton-shimmer {
+      background: linear-gradient(90deg, #eef1f4 25%, #f8f9fa 50%, #eef1f4 75%);
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.4s ease-in-out infinite;
+      border-radius: 8px;
+    }
+    @keyframes skeleton-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+  </style>
   <link rel="stylesheet" href="styles.css">
-  <script>
-    window.whenStylesReady = function (callback) {
-      var link = document.querySelector('link[rel="stylesheet"][href="styles.css"]');
-      if (!link || link.sheet) {
-        callback();
-        return;
-      }
-      link.addEventListener('load', callback, { once: true });
-      link.addEventListener('error', callback, { once: true });
-    };
-    (function () {
-      var link = document.querySelector('link[rel="stylesheet"][href="styles.css"]');
-      function reveal() {
-        document.documentElement.classList.add('css-ready');
-      }
-      if (!link || link.sheet) {
-        reveal();
-        return;
-      }
-      link.addEventListener('load', reveal, { once: true });
-      link.addEventListener('error', reveal, { once: true });
-      setTimeout(reveal, 4000);
-    })();
-  </script>
+  <script src="load-bootstrap.js"></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body>
+  <div id="page-skeleton" class="page-skeleton page-skeleton--icon" aria-busy="true" aria-label="Loading add to list button">
+    <div class="skeleton-shimmer skeleton-block--circle"></div>
+  </div>
   <div id="root"></div>
 
   <script type="text/babel">
@@ -251,7 +260,7 @@
       );
     }
 
-    whenStylesReady(function () {
+    mountWhenReady(function () {
       const root = ReactDOM.createRoot(document.getElementById('root'));
       root.render(<AddToListComponent />);
     });
