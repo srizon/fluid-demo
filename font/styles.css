@@ -7,7 +7,7 @@
 }
 
 :root {
-  --standard-text-color: #1a1a1a;
+  --primary-text-color: #1a1a1a;
   --font-weight-medium: 550;
   --font-weight-bold: 600;
   --font-weight-normal: 450;
@@ -20,7 +20,7 @@
 
 body {
   background: #ffffff;
-  color: var(--standard-text-color);
+  color: var(--primary-text-color);
   font-family: "PP Neue Montreal", sans-serif;
   font-synthesis: none;
 }
