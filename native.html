@@ -60,6 +60,8 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
+      min-width: 0;
+      width: 100%;
     }
 
     .field label {
@@ -108,6 +110,48 @@
       appearance: none;
       -webkit-appearance: none;
       cursor: pointer;
+    }
+
+    /*
+      iOS gives date and time inputs an intrinsic width and centers the
+      value. min-width: 0 lets them shrink inside the flex column, and
+      the WebKit pseudo left-aligns the displayed value. appearance: none
+      drops that intrinsic size; tapping still opens the native picker.
+    */
+    input[type="date"].control,
+    input[type="time"].control,
+    input[type="datetime-local"].control,
+    input[type="month"].control,
+    input[type="week"].control {
+      display: block;
+      min-width: 0;
+      max-width: 100%;
+      text-align: left;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    input[type="date"].control::-webkit-date-and-time-value,
+    input[type="time"].control::-webkit-date-and-time-value,
+    input[type="datetime-local"].control::-webkit-date-and-time-value,
+    input[type="month"].control::-webkit-date-and-time-value,
+    input[type="week"].control::-webkit-date-and-time-value {
+      min-height: 1.2em;
+      text-align: left;
+      margin: 0;
+    }
+
+    input[type="date"].control::-webkit-datetime-edit,
+    input[type="time"].control::-webkit-datetime-edit,
+    input[type="datetime-local"].control::-webkit-datetime-edit,
+    input[type="month"].control::-webkit-datetime-edit,
+    input[type="week"].control::-webkit-datetime-edit,
+    input[type="date"].control::-webkit-datetime-edit-fields-wrapper,
+    input[type="time"].control::-webkit-datetime-edit-fields-wrapper,
+    input[type="datetime-local"].control::-webkit-datetime-edit-fields-wrapper,
+    input[type="month"].control::-webkit-datetime-edit-fields-wrapper,
+    input[type="week"].control::-webkit-datetime-edit-fields-wrapper {
+      padding: 0;
     }
 
     input[type="color"].control {
