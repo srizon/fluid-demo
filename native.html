@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Native pickers</title>
+  <style>
+    @font-face {
+      font-family: "PP Neue Montreal";
+      src: url("https://www.upwork.com/static/fonts-global/4.7.0/neue-montreal-variable.woff2") format("woff2");
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #ffffff;
+      color: #1a1a1a;
+      font-family: "PP Neue Montreal", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-synthesis: none;
+    }
+
+    .page {
+      width: min(520px, 100%);
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+
+    .page-heading {
+      font-size: 32px;
+      font-weight: 550;
+      line-height: 40px;
+      letter-spacing: 0.64px;
+    }
+
+    .page-intro {
+      margin-top: 12px;
+      font-weight: 450;
+      font-size: 14px;
+      line-height: 22px;
+      letter-spacing: 0.56px;
+      font-variation-settings: "wght" 450;
+      color: #67737e;
+    }
+
+    .form {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-top: 32px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field label {
+      font-weight: 600;
+      font-size: 16px;
+      line-height: 24px;
+      letter-spacing: 0.48px;
+      font-variation-settings: "wght" 600;
+    }
+
+    /*
+      Closed chrome only. Picker inputs keep the browser indicator so
+      the native sheet anchors to the real control.
+    */
+    .control {
+      width: 100%;
+      height: 48px;
+      padding: 0 12px;
+      border: 1px solid #d4dbe2;
+      border-radius: 12px;
+      background-color: #ffffff;
+      color: #1a1a1a;
+      font: inherit;
+      font-weight: 450;
+      font-size: 14px;
+      line-height: 22px;
+      letter-spacing: 0.56px;
+      font-variation-settings: "wght" 450;
+    }
+
+    .control::placeholder {
+      color: #67737e;
+      opacity: 0.6;
+    }
+
+    .control:focus {
+      border-color: #1a1a1a;
+      outline: none;
+    }
+
+    select.control {
+      padding-right: 40px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 5.75 8 10.25l4.5-4.5' stroke='%231a1a1a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+
+    input[type="color"].control {
+      padding: 8px;
+      cursor: pointer;
+    }
+
+    input[type="color"].control::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    input[type="color"].control::-webkit-color-swatch,
+    input[type="color"].control::-moz-color-swatch {
+      border: none;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <h1 class="page-heading">Native pickers</h1>
+    <p class="page-intro">Open this page in Chrome, Safari, Firefox, and on a phone. The closed fields share one style. Each browser draws its own menu or sheet when a field opens.</p>
+    <form class="form">
+      <div class="field">
+        <label for="select">Select</label>
+        <select class="control" id="select" name="select">
+          <option value="" selected disabled>Choose a city</option>
+          <option>Dhaka</option>
+          <option>Chattogram</option>
+          <option>Sylhet</option>
+          <option>Rajshahi</option>
+          <option>Khulna</option>
+          <option>Barishal</option>
+          <option>Rangpur</option>
+          <option>Mymensingh</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="date">Date</label>
+        <input class="control" id="date" name="date" type="date">
+      </div>
+      <div class="field">
+        <label for="time">Time</label>
+        <input class="control" id="time" name="time" type="time">
+      </div>
+      <div class="field">
+        <label for="datetime">Date and time</label>
+        <input class="control" id="datetime" name="datetime" type="datetime-local">
+      </div>
+      <div class="field">
+        <label for="month">Month</label>
+        <input class="control" id="month" name="month" type="month">
+      </div>
+      <div class="field">
+        <label for="week">Week</label>
+        <input class="control" id="week" name="week" type="week">
+      </div>
+      <div class="field">
+        <label for="color">Color</label>
+        <input class="control" id="color" name="color" type="color" value="#1a1a1a">
+      </div>
+    </form>
+  </main>
+</body>
+</html>
