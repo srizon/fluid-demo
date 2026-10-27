@@ -1,6 +1,14 @@
 @font-face {
-  font-family: "PP Neue Montreal";
+  font-family: "PP Neue Montreal Remote";
   src: url("https://www.upwork.com/static/fonts-global/4.7.0/neue-montreal-variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "PP Neue Montreal Local";
+  src: url("neue-montreal-variable.woff2") format("woff2");
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
@@ -21,15 +29,40 @@
 body {
   background: #ffffff;
   color: var(--primary-text-color);
-  font-family: "PP Neue Montreal", sans-serif;
   font-synthesis: none;
 }
 
+.comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+}
+
+.column {
+  padding: 48px 40px 80px;
+}
+
+.column-remote {
+  font-family: "PP Neue Montreal Remote", sans-serif;
+  border-right: 1px solid #e6e6e6;
+}
+
+.column-local {
+  font-family: "PP Neue Montreal Local", sans-serif;
+}
+
+.source {
+  margin-bottom: 40px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+  letter-spacing: 0.36px;
+  text-transform: uppercase;
+  color: #6b6b6b;
+}
+
 .typography {
-  width: 800px;
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 80px 0;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
